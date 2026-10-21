@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useShallow } from 'zustand/react/shallow'
+import { useConfirm } from '../../components/ConfirmDialog'
 import { Alert, Button, Card, PageHeader } from '../../components/ui'
 import { createDemoState } from '../../lib/demo'
 import { useStore } from '../../store/store'
@@ -8,6 +9,7 @@ import { downloadBackup, loadBackup } from './backup'
 
 export default function DataPage() {
   const navigate = useNavigate()
+  const confirm = useConfirm()
   const fileRef = useRef<HTMLInputElement>(null)
   const [message, setMessage] = useState<{ tone: 'success' | 'error'; text: string }>()
   const counts = useStore(useShallow((s) => ({ guests: s.guests.length, tables: s.tables.length, gifts: s.gifts.length, expenses: s.expenses.length })))
@@ -15,7 +17,15 @@ export default function DataPage() {
 
   const onFile = async (file: File | undefined) => {
     if (!file) return
-    if (!confirm('Loading a backup replaces everything currently in the planner. Continue?')) return
+    const ok = await confirm({
+      title: 'Load this backup?',
+      message: 'It replaces everything currently in the planner.',
+      confirmLabel: 'Load backup',
+    })
+    if (!ok) {
+      if (fileRef.current) fileRef.current.value = ''
+      return
+    }
     const error = await loadBackup(file)
     setMessage(error ? { tone: 'error', text: error } : { tone: 'success', text: `Loaded ${file.name}.` })
     if (fileRef.current) fileRef.current.value = ''
@@ -50,8 +60,13 @@ export default function DataPage() {
         <Card title="Try the demo">
           <p className="mb-4 text-sm text-stone-600">Fill the planner with a made-up wedding to explore every screen.</p>
           <Button
-            onClick={() => {
-              if (!confirm('This replaces your current data with demo data. Download a backup first if you want to keep it. Continue?')) return
+            onClick={async () => {
+              const ok = await confirm({
+                title: 'Load the demo wedding?',
+                message: 'This replaces your current data with demo data. Download a backup first if you want to keep it.',
+                confirmLabel: 'Load demo',
+              })
+              if (!ok) return
               useStore.getState().replaceState(createDemoState())
               navigate('/dashboard')
             }}
@@ -64,8 +79,14 @@ export default function DataPage() {
           <p className="mb-4 text-sm text-stone-600">Delete all planner data from this browser.</p>
           <Button
             variant="danger"
-            onClick={() => {
-              if (!confirm('Delete all planner data from this browser? This cannot be undone unless you have a backup.')) return
+            onClick={async () => {
+              const ok = await confirm({
+                title: 'Delete all planner data?',
+                message: 'This removes everything from this browser. It cannot be undone unless you have a backup.',
+                confirmLabel: 'Reset everything',
+                tone: 'danger',
+              })
+              if (!ok) return
               useStore.getState().reset()
               navigate('/setup')
             }}

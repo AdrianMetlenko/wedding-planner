@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useShallow } from 'zustand/react/shallow'
+import { useConfirm } from '../../components/ConfirmDialog'
 import { Badge, Button, Card, EmptyState, Input, PageHeader, Select } from '../../components/ui'
 import { guestName } from '../../lib/format'
 import { GUEST_TYPES, type GuestType, type Rsvp } from '../../lib/types'
@@ -25,6 +26,7 @@ type Dialog =
   | null
 
 export default function GuestsPage() {
+  const confirm = useConfirm()
   const { guests, households, categories, tags, allAttributes, tables } = useStore(useShallow((s) => ({
     guests: s.guests, households: s.households, categories: s.categories, tags: s.tags,
     allAttributes: s.balanceAttributes, tables: s.tables,
@@ -69,8 +71,8 @@ export default function GuestsPage() {
     setNote(lost ? `${lost} guest${lost > 1 ? 's were' : ' was'} removed from their table because they declined.` : '')
   }
 
-  const confirmDelete = (ids: string[], label: string) => {
-    if (!window.confirm(`Delete ${label}? This cannot be undone.`)) return
+  const confirmDelete = async (ids: string[], label: string) => {
+    if (!await confirm({ title: `Delete ${label}?`, message: 'This cannot be undone.', confirmLabel: 'Delete', tone: 'danger' })) return
     deleteGuests(ids)
     toggle(ids, false)
   }

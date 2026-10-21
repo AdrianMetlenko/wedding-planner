@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useConfirm } from '../../components/ConfirmDialog'
 import { Badge, Button, Card, Field, Input } from '../../components/ui'
 import { packageCostAt } from '../../lib/calc'
 import { formatMoney } from '../../lib/format'
@@ -28,6 +29,7 @@ function packageSummary(p: VenuePackage) {
 export function VenueCard({ venue, headcount, startOpen, onChoose }: {
   venue: Venue; headcount: number; startOpen?: boolean; onChoose: (packageId: string) => void
 }) {
+  const confirm = useConfirm()
   const [editing, setEditing] = useState(!!startOpen)
   const [open, setOpen] = useState<string[]>(() => (startOpen ? venue.packages.map((p) => p.id) : []))
   const toggle = (id: string) => setOpen((o) => (o.includes(id) ? o.filter((x) => x !== id) : [...o, id]))
@@ -42,7 +44,7 @@ export function VenueCard({ venue, headcount, startOpen, onChoose }: {
             {editing ? 'Done' : 'Edit venue'}
           </Button>
           <Button size="sm" variant="ghost" aria-label={`Delete venue ${name}`}
-            onClick={() => { if (window.confirm(`Delete ${name} and all its packages?`)) deleteVenue(venue.id) }}>
+            onClick={async () => { if (await confirm({ title: `Delete ${name}?`, message: 'This also deletes all its packages.', confirmLabel: 'Delete venue', tone: 'danger' })) deleteVenue(venue.id) }}>
             Delete
           </Button>
         </>
@@ -97,7 +99,7 @@ export function VenueCard({ venue, headcount, startOpen, onChoose }: {
                     Duplicate
                   </Button>
                   <Button size="sm" variant="ghost" aria-label={`Delete package ${label}`}
-                    onClick={() => { if (window.confirm(`Delete package ${label}?`)) deletePackage(venue.id, p.id) }}>
+                    onClick={async () => { if (await confirm({ title: `Delete package ${label}?`, confirmLabel: 'Delete package', tone: 'danger' })) deletePackage(venue.id, p.id) }}>
                     Delete
                   </Button>
                   <Button size="sm" variant={p.chosen ? 'secondary' : 'primary'} disabled={p.chosen}

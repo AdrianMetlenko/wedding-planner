@@ -1,3 +1,4 @@
+import { useConfirm } from '../../components/ConfirmDialog'
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
@@ -171,6 +172,7 @@ function ExpenseTable({ expenses, categories, onEdit, onDelete, extraRow }: {
 }
 
 export default function BudgetPage() {
+  const confirm = useConfirm()
   const { expenses, categories, guests, settings, upsert, remove } = useStore(useShallow((s) => ({
     expenses: s.expenses, categories: s.expenseCategories, guests: s.guests, settings: s.settings,
     upsert: s.upsert, remove: s.remove,
@@ -231,8 +233,8 @@ export default function BudgetPage() {
     setEditing(undefined)
   }
   const edit = (e: Expense) => setEditing({ ...e, notes: e.notes ?? '' })
-  const del = (e: Expense) => {
-    if (window.confirm(`Delete "${e.item}"?`)) remove('expenses', e.id)
+  const del = async (e: Expense) => {
+    if (await confirm({ title: `Delete "${e.item}"?`, confirmLabel: 'Delete expense', tone: 'danger' })) remove('expenses', e.id)
   }
   const seed = () => {
     for (const c of COMMON_ITEMS) {

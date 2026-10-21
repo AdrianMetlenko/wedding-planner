@@ -1,3 +1,4 @@
+import { useConfirm } from '../../components/ConfirmDialog'
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useShallow } from 'zustand/react/shallow'
@@ -116,6 +117,7 @@ function GiftForm({ initial, households, onSave, onCancel }: {
 }
 
 export default function GiftsPage() {
+  const confirm = useConfirm()
   const { gifts, guests, households, settings, upsert, patch, remove } = useStore(useShallow((s) => ({
     gifts: s.gifts, guests: s.guests, households: s.households, settings: s.settings,
     upsert: s.upsert, patch: s.patch, remove: s.remove,
@@ -175,8 +177,8 @@ export default function GiftsPage() {
     id: g.id, from: g.from, householdIds: g.householdIds, kind: g.kind, amount: g.amount,
     description: g.description ?? '', thankYouSent: g.thankYouSent,
   })
-  const del = (g: Gift) => {
-    if (window.confirm(`Delete the gift from ${g.from}?`)) remove('gifts', g.id)
+  const del = async (g: Gift) => {
+    if (await confirm({ title: `Delete the gift from ${g.from}?`, confirmLabel: 'Delete gift', tone: 'danger' })) remove('gifts', g.id)
   }
   const householdsOf = (g: Gift) => g.householdIds.map((id) => householdName.get(id)).filter(Boolean).join(', ')
 

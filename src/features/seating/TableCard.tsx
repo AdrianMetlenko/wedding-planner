@@ -1,6 +1,7 @@
 import { useDroppable } from '@dnd-kit/core'
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { useState } from 'react'
+import { useConfirm } from '../../components/ConfirmDialog'
 import { Button, Field, Input, NumberInput, Select, cx } from '../../components/ui'
 import type { Category, Guest, Table, TableShape } from '../../lib/types'
 import { MixBar, SeatedChip, ShapeIcon, type ColoredSegment } from './parts'
@@ -28,6 +29,7 @@ export function TableCard({
   table, tables, guests, seated, categories, segments, mixLabel, isFirst, isLast,
   onMoveGuest, onEdit, onDelete, onShift,
 }: Props) {
+  const confirm = useConfirm()
   const { setNodeRef, isOver } = useDroppable({ id: tableDropId(table.id) })
   const [editing, setEditing] = useState(false)
   const over = seated.length > table.capacity
@@ -97,8 +99,12 @@ export function TableCard({
             variant="ghost"
             className="ml-auto text-red-600"
             aria-label={`Delete ${table.name}`}
-            onClick={() => {
-              if (seated.length === 0 || window.confirm(`Delete ${table.name}? Its ${seated.length} guests become unassigned.`)) onDelete()
+            onClick={async () => {
+              if (seated.length === 0 || await confirm({
+                title: `Delete ${table.name}?`,
+                message: `Its ${seated.length} guest${seated.length === 1 ? '' : 's'} will become unassigned.`,
+                confirmLabel: 'Delete table', tone: 'danger',
+              })) onDelete()
             }}
           >
             Delete

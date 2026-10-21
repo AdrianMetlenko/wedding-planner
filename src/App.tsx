@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { HashRouter, Navigate, Route, Routes } from 'react-router-dom'
+import { ConfirmProvider } from './components/ConfirmDialog'
 import { Layout } from './components/Layout'
 import BudgetPage from './features/budget/BudgetPage'
 import DataPage from './features/data/DataPage'
@@ -21,6 +22,7 @@ function RequireSetup({ children }: { children: ReactNode }) {
 
 export default function App() {
   return (
+    <ConfirmProvider>
     <HashRouter>
       <Routes>
         <Route path="/setup" element={<SetupPage />} />
@@ -38,5 +40,6 @@ export default function App() {
         <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Routes>
     </HashRouter>
+    </ConfirmProvider>
   )
 }

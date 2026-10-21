@@ -1,11 +1,12 @@
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { ConfirmProvider } from '../../components/ConfirmDialog'
 import { createDemoState } from '../../lib/demo'
 import { useStore } from '../../store/store'
 import VenuesPage from './VenuesPage'
 
-const renderPage = () => render(<MemoryRouter><VenuesPage /></MemoryRouter>)
+const renderPage = () => render(<ConfirmProvider><MemoryRouter><VenuesPage /></MemoryRouter></ConfirmProvider>)
 
 describe('VenuesPage', () => {
   beforeEach(() => useStore.getState().reset())
